@@ -1,0 +1,9 @@
+[package]
+name = "aloft"
+version = "0.1.0"
+authors = ["Nate Mara <natemara@gmail.com>"]
+
+[dependencies]
+hyper = "0.5.2"
+regex = "0.1.8"
+regex_macros = "0.1.8"
