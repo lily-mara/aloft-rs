@@ -6,6 +6,11 @@ data from NOAA. This data is normally available as a giant blob from NOAA
 [here](http://aviationweather.gov/products/nws/all) and is obviously quite a
 pain to work with. Aloft-rs makes this easier!
 
+Requirements
+---
+
+Aloft-rs requires Rust Nightly (`regex!` macro relies on unstable features).
+
 Cargo.toml
 ---
 
@@ -25,8 +30,8 @@ main.rs
 		println!("{:?}", winds.wind_at_altitude(12000).unwrap());
 	}
 
-You can also use [rustc-serialize]() to encode/decode the structs to/from JSON
-for web applications easily
+You can also use [rustc-serialize](https://crates.io/crates/rustc-serialize)
+to encode/decode the structs to/from JSON for web applications easily
 
 main.rs
 ---
