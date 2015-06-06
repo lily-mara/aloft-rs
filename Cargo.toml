@@ -5,6 +5,8 @@ authors = ["Nate Mara <natemara@gmail.com>"]
 readme = "README.md"
 license = "MIT"
 description = "Simple library for interacting with winds aloft data from NOAA"
+repository = "https://github.com/natemara/aloft-rs"
+homepage = "https://github.com/natemara/aloft-rs"
 
 [dependencies]
 hyper = "0.5.2"
