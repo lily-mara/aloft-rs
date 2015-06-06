@@ -7,7 +7,7 @@ set -o errexit -o nounset
 rev=$(git rev-parse --short HEAD)
 
 cargo doc
-cd target/doc/aloft
+cd target/doc
 
 git init
 git config user.name "Nate Mara"
