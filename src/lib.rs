@@ -8,6 +8,9 @@ use std::io::Read;
 use hyper::Client;
 use regex::Regex;
 
+/// Interact with winds aloft data from NOAA
+
+
 const URL: &'static str = "http://aviationweather.gov/products/nws/all";
 static PATTERN: Regex = regex!(r"(?x)
     (?P<station>\w+)\s          # Airport code
@@ -25,6 +28,7 @@ static WIND_PATTERN: Regex = regex!(r"(?x)
     \w+
 ");
 
+/// The wind data from one weather station at one altitude
 #[derive(Debug,RustcDecodable, RustcEncodable)]
 pub struct Wind {
     direction: u32,
@@ -32,6 +36,7 @@ pub struct Wind {
     altitude: u32,
 }
 
+/// Weather data from one weather station at all altitudes
 #[derive(Debug,RustcDecodable, RustcEncodable)]
 pub struct WindsAloft {
     station: String,
@@ -53,6 +58,8 @@ impl WindsAloft {
         WindsAloft { station: station.to_string(), winds: winds }
     }
 
+    /// Search through the wind data from this station, return the wind data from the given
+    /// altitude if it exists, otherwise return `None`.
     pub fn wind_at_altitude(&self, altitude: u32) -> Option<&Wind> {
         for wind in self.winds.iter() {
             if wind.altitude == altitude {
