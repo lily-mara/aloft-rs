@@ -1,5 +1,6 @@
 #![feature(plugin,collections)]
 #![plugin(regex_macros)]
+extern crate rustc_serialize;
 extern crate regex;
 extern crate hyper;
 
@@ -24,14 +25,14 @@ static WIND_PATTERN: Regex = regex!(r"(?x)
     \w+
 ");
 
-#[derive(Debug)]
+#[derive(Debug,RustcDecodable, RustcEncodable)]
 pub struct Wind {
     direction: u32,
     speed: u32,
     altitude: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug,RustcDecodable, RustcEncodable)]
 pub struct WindsAloft {
     station: String,
     winds: Vec<Wind>,

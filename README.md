@@ -24,3 +24,21 @@ main.rs
 		println!("{:?}", winds);
 		println!("{:?}", winds.wind_at_altitude(12000).unwrap());
 	}
+
+You can also use [rustc-serialize]() to encode/decode the structs to/from JSON
+for web applications easily
+
+main.rs
+---
+
+	extern crate aloft;
+	extern crate rustc_serialize;
+	use aloft::winds_aloft_for_station;
+	use rustc_serialize::json;
+
+	fn main() {
+		let winds = winds_aloft_for_station("CVG").unwrap();
+
+		println!("{}", json::encode(&winds).unwrap());
+		println!("{}", json::encode(&winds.wind_at_altitude(12000).unwrap()).unwrap());
+	}

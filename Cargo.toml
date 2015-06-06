@@ -1,6 +1,6 @@
 [package]
 name = "aloft"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Nate Mara <natemara@gmail.com>"]
 readme = "README.md"
 license = "MIT"
@@ -12,3 +12,4 @@ homepage = "https://github.com/natemara/aloft-rs"
 hyper = "0.5.2"
 regex = "0.1.8"
 regex_macros = "0.1.8"
+rustc-serialize = "0.3.14"
