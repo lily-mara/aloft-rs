@@ -2,6 +2,9 @@
 name = "aloft"
 version = "0.1.0"
 authors = ["Nate Mara <natemara@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+description = "Simple library for interacting with winds aloft data from NOAA"
 
 [dependencies]
 hyper = "0.5.2"

@@ -51,6 +51,15 @@ impl WindsAloft {
     pub fn new(station: &str, winds: Vec<Wind>) -> WindsAloft {
         WindsAloft { station: station.to_string(), winds: winds }
     }
+
+    pub fn wind_at_altitude(&self, altitude: u32) -> Option<&Wind> {
+        for wind in self.winds.iter() {
+            if wind.altitude == altitude {
+                return Some(wind);
+            }
+        }
+        None
+    }
 }
 
 pub fn winds_aloft_for_station(station: &str) -> Option<WindsAloft> {
