@@ -306,19 +306,66 @@
 <span id="264">264</span>
 <span id="265">265</span>
 <span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
 </pre><pre class='rust '>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin</span>,<span class='ident'>collections</span>)]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>plugin</span>,<span class='ident'>collections</span>,<span class='ident'>core</span>)]</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>plugin</span>(<span class='ident'>regex_macros</span>)]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rustc_serialize</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>regex</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>hyper</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>chrono</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>core</span>;
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::<span class='ident'>Read</span>;
 <span class='kw'>use</span> <span class='ident'>hyper</span>::<span class='ident'>Client</span>;
 <span class='kw'>use</span> <span class='ident'>regex</span>::<span class='ident'>Regex</span>;
+<span class='kw'>use</span> <span class='ident'>chrono</span>::<span class='ident'>offset</span>::<span class='ident'>utc</span>::<span class='ident'>UTC</span>;
+<span class='kw'>use</span> <span class='ident'>chrono</span>::<span class='ident'>Timelike</span>;
+
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
+<span class='kw'>mod</span> <span class='ident'>test</span>;
 
 <span class='doccomment'>/// Interact with winds aloft data from NOAA</span>
-
 
 <span class='kw'>const</span> <span class='ident'>URL</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span> <span class='op'>=</span> <span class='string'>&quot;http://aviationweather.gov/products/nws/all&quot;</span>;
 <span class='kw'>static</span> <span class='ident'>PATTERN</span>: <span class='ident'>Regex</span> <span class='op'>=</span> <span class='macro'>regex</span><span class='macro'>!</span>(<span class='string'>r&quot;(?x)
@@ -336,9 +383,12 @@
 <span class='kw'>static</span> <span class='ident'>WIND_PATTERN</span>: <span class='ident'>Regex</span> <span class='op'>=</span> <span class='macro'>regex</span><span class='macro'>!</span>(<span class='string'>r&quot;(?x)
     \w+
 &quot;</span>);
+<span class='kw'>static</span> <span class='ident'>TIME_PATTERN</span>: <span class='ident'>Regex</span> <span class='op'>=</span> <span class='macro'>regex</span><span class='macro'>!</span>(<span class='string'>r&quot;(?x)
+    DATA\sBASED\sON\s(?P&lt;date&gt;\d{2})(?P&lt;time&gt;\d{4})Z
+&quot;</span>);
 
 <span class='doccomment'>/// The wind data from one weather station at one altitude</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>,<span class='ident'>RustcDecodable</span>, <span class='ident'>RustcEncodable</span>)]</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>,<span class='ident'>RustcEncodable</span>,<span class='ident'>RustcDecodable</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Wind</span> {
     <span class='ident'>direction</span>: <span class='ident'>u32</span>,
     <span class='ident'>speed</span>: <span class='ident'>u32</span>,
@@ -346,10 +396,109 @@
 }
 
 <span class='doccomment'>/// Weather data from one weather station at all altitudes</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>,<span class='ident'>RustcDecodable</span>, <span class='ident'>RustcEncodable</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>WindsAloft</span> {
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>,<span class='ident'>RustcEncodable</span>,<span class='ident'>RustcDecodable</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>StationForecast</span> {
     <span class='ident'>station</span>: <span class='ident'>String</span>,
     <span class='ident'>winds</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Wind</span><span class='op'>&gt;</span>,
+}
+
+<span class='doccomment'>/// All information associated with winds aloft forecast</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>,<span class='ident'>RustcEncodable</span>,<span class='ident'>RustcDecodable</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>WindsAloftForecast</span> {
+    <span class='doccomment'>/// The zulu time that this forecast was received as an unsigned 32-bit number. For example, if</span>
+    <span class='doccomment'>/// the report was downloaded at 2:45 PM (UTC + 1), this field will be 1345u32.</span>
+    <span class='ident'>time_retrieved</span>: <span class='ident'>u32</span>,
+
+    <span class='doccomment'>/// The zulu time that this report was generated.</span>
+    <span class='ident'>forecast_time</span>: <span class='ident'>u32</span>,
+
+    <span class='doccomment'>/// The list of `StationForecast` objects that are held in this report.</span>
+    <span class='ident'>forecasts</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>StationForecast</span><span class='op'>&gt;</span>,
+}
+
+
+<span class='kw'>impl</span> <span class='ident'>WindsAloftForecast</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>WindsAloftForecast</span> {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>forecast</span> <span class='op'>=</span> <span class='ident'>WindsAloftForecast</span> {
+            <span class='ident'>time_retrieved</span>: <span class='number'>0u32</span>,
+            <span class='ident'>forecast_time</span>: <span class='number'>0u32</span>,
+            <span class='ident'>forecasts</span>: <span class='macro'>vec</span><span class='macro'>!</span>[],
+        };
+        <span class='ident'>forecast</span>.<span class='ident'>refresh</span>();
+
+        <span class='ident'>forecast</span>
+    }
+
+    <span class='doccomment'>/// Re-downloads the forecast from NOAA. Returns None if there is a problem with the download,</span>
+    <span class='doccomment'>/// or `Some(())` if the operation completes successfully.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>refresh</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>client</span> <span class='op'>=</span> <span class='ident'>Client</span>::<span class='ident'>new</span>();
+
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>client</span>.<span class='ident'>get</span>(<span class='ident'>URL</span>).<span class='ident'>send</span>() {
+            <span class='prelude-val'>Ok</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='ident'>x</span>,
+            <span class='prelude-val'>Err</span>(_) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>None</span>,
+        };
+
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>body</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
+        <span class='ident'>res</span>.<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>body</span>).<span class='ident'>unwrap</span>();
+
+        <span class='self'>self</span>.<span class='ident'>forecasts</span> <span class='op'>=</span> <span class='ident'>winds_from_body</span>(<span class='kw-2'>&amp;</span><span class='ident'>body</span>);
+        <span class='self'>self</span>.<span class='ident'>forecast_time</span> <span class='op'>=</span> <span class='ident'>WindsAloftForecast</span>::<span class='ident'>parse_time_from_body</span>(<span class='kw-2'>&amp;</span><span class='ident'>body</span>);
+
+        <span class='kw'>let</span> <span class='ident'>now</span> <span class='op'>=</span> <span class='ident'>UTC</span>::<span class='ident'>now</span>();
+        <span class='kw'>let</span> <span class='ident'>hour</span> <span class='op'>=</span> <span class='ident'>now</span>.<span class='ident'>hour</span>();
+        <span class='kw'>let</span> <span class='ident'>minute</span> <span class='op'>=</span> <span class='ident'>now</span>.<span class='ident'>minute</span>();
+
+        <span class='self'>self</span>.<span class='ident'>time_retrieved</span> <span class='op'>=</span> <span class='ident'>hour</span> <span class='op'>*</span> <span class='number'>100</span> <span class='op'>+</span> <span class='ident'>minute</span>;
+
+        <span class='prelude-val'>Some</span>(())
+    }
+
+    <span class='doccomment'>/// Returns true if the data stored in this forecast is out of date, false otherwise. The</span>
+    <span class='doccomment'>/// winds aloft forecast is published at 00Z, 06Z, 12Z and 18Z</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>needs_refresh</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+        <span class='kw'>let</span> <span class='ident'>now</span> <span class='op'>=</span> <span class='ident'>UTC</span>::<span class='ident'>now</span>();
+        <span class='kw'>let</span> <span class='ident'>hour</span> <span class='op'>=</span> <span class='ident'>now</span>.<span class='ident'>hour</span>();
+        <span class='kw'>let</span> <span class='ident'>minute</span> <span class='op'>=</span> <span class='ident'>now</span>.<span class='ident'>minute</span>();
+
+        <span class='self'>self</span>.<span class='ident'>needs_refresh_time_given</span>(<span class='ident'>hour</span> <span class='op'>*</span> <span class='number'>100</span> <span class='op'>+</span> <span class='ident'>minute</span>)
+    }
+
+    <span class='kw'>fn</span> <span class='ident'>needs_refresh_time_given</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>time</span>: <span class='ident'>u32</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+        <span class='kw'>let</span> <span class='ident'>hour</span> <span class='op'>=</span> <span class='ident'>time</span> <span class='op'>/</span> <span class='number'>100u32</span>;
+        <span class='kw'>let</span> <span class='ident'>forecast_hour</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>forecast_time</span> <span class='op'>/</span> <span class='number'>100u32</span>;
+
+        <span class='kw'>if</span> <span class='ident'>hour</span> <span class='op'>&gt;</span> <span class='ident'>forecast_hour</span> <span class='op'>+</span> <span class='number'>6</span> {
+            <span class='boolval'>true</span>
+        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>hour</span> <span class='op'>&lt;</span> <span class='ident'>forecast_hour</span> {
+            <span class='boolval'>true</span>
+        } <span class='kw'>else</span> {
+            <span class='boolval'>false</span>
+        }
+    }
+
+    <span class='doccomment'>/// Get the forecast for a specific station out of this complete forecast.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_station_forecast</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>station</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>StationForecast</span><span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='ident'>upper_station</span> <span class='op'>=</span> <span class='ident'>station</span>.<span class='ident'>to_uppercase</span>();
+        <span class='kw'>for</span> <span class='ident'>wind</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>forecasts</span>.<span class='ident'>iter</span>() {
+            <span class='kw'>if</span> <span class='ident'>wind</span>.<span class='ident'>station</span> <span class='op'>==</span> <span class='ident'>upper_station</span> {
+                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>wind</span>);
+            }
+        }
+        <span class='prelude-val'>None</span>
+    }
+
+    <span class='kw'>fn</span> <span class='ident'>parse_time_from_body</span>(<span class='ident'>body</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>time</span> <span class='op'>=</span> <span class='number'>0u32</span>;
+        <span class='kw'>for</span> <span class='ident'>group</span> <span class='kw'>in</span> <span class='ident'>TIME_PATTERN</span>.<span class='ident'>captures_iter</span>(<span class='ident'>body</span>) {
+            <span class='ident'>time</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>group</span>.<span class='ident'>name</span>(<span class='string'>&quot;time&quot;</span>) {
+                <span class='prelude-val'>Some</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='ident'>x</span>.<span class='ident'>parse</span>().<span class='ident'>unwrap</span>(),
+                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>continue</span>,
+            }
+        }
+
+        <span class='ident'>time</span>
+    }
 }
 
 <span class='kw'>impl</span> <span class='ident'>Wind</span> {
@@ -362,9 +511,9 @@
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>WindsAloft</span> {
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>station</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>winds</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Wind</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>WindsAloft</span> {
-        <span class='ident'>WindsAloft</span> { <span class='ident'>station</span>: <span class='ident'>station</span>.<span class='ident'>to_string</span>(), <span class='ident'>winds</span>: <span class='ident'>winds</span> }
+<span class='kw'>impl</span> <span class='ident'>StationForecast</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>station</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>winds</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Wind</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>StationForecast</span> {
+        <span class='ident'>StationForecast</span> { <span class='ident'>station</span>: <span class='ident'>station</span>.<span class='ident'>to_string</span>(), <span class='ident'>winds</span>: <span class='ident'>winds</span> }
     }
 
     <span class='doccomment'>/// Search through the wind data from this station, return the wind data from the given</span>
@@ -379,39 +528,10 @@
     }
 }
 
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>winds_aloft_for_station</span>(<span class='ident'>station</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>WindsAloft</span><span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='ident'>upper_station</span> <span class='op'>=</span> <span class='ident'>station</span>.<span class='ident'>to_uppercase</span>();
-    <span class='kw'>match</span> <span class='ident'>all_winds_aloft</span>() {
-        <span class='prelude-val'>Some</span>(<span class='ident'>winds</span>) <span class='op'>=&gt;</span> {
-            <span class='kw'>for</span> <span class='ident'>wind</span> <span class='kw'>in</span> <span class='ident'>winds</span> {
-                <span class='kw'>if</span> <span class='ident'>wind</span>.<span class='ident'>station</span> <span class='op'>==</span> <span class='ident'>upper_station</span> {
-                    <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>wind</span>);
-                }
-            }
-        },
-        <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>None</span>
-    }
-    <span class='prelude-val'>None</span>
-}
+<span class='kw'>fn</span> <span class='ident'>winds_from_body</span>(<span class='ident'>body</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>StationForecast</span><span class='op'>&gt;</span> {
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>wind_aloft</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>StationForecast</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
 
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>all_winds_aloft</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>WindsAloft</span><span class='op'>&gt;&gt;</span> {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>client</span> <span class='op'>=</span> <span class='ident'>Client</span>::<span class='ident'>new</span>();
-
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>client</span>.<span class='ident'>get</span>(<span class='ident'>URL</span>).<span class='ident'>send</span>() {
-        <span class='prelude-val'>Ok</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='ident'>x</span>,
-        <span class='prelude-val'>Err</span>(_) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>None</span>,
-    };
-
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>body</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
-    <span class='ident'>res</span>.<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>body</span>).<span class='ident'>unwrap</span>();
-
-    <span class='prelude-val'>Some</span>(<span class='ident'>winds_from_body</span>(<span class='ident'>body</span>))
-}
-
-<span class='kw'>fn</span> <span class='ident'>winds_from_body</span>(<span class='ident'>body</span>: <span class='ident'>String</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>WindsAloft</span><span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>wind_aloft</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>WindsAloft</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
-
-    <span class='kw'>for</span> <span class='ident'>group</span> <span class='kw'>in</span> <span class='ident'>PATTERN</span>.<span class='ident'>captures_iter</span>(<span class='kw-2'>&amp;</span><span class='ident'>body</span>) {
+    <span class='kw'>for</span> <span class='ident'>group</span> <span class='kw'>in</span> <span class='ident'>PATTERN</span>.<span class='ident'>captures_iter</span>(<span class='ident'>body</span>) {
         <span class='kw'>let</span> <span class='ident'>station</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>group</span>.<span class='ident'>name</span>(<span class='string'>&quot;station&quot;</span>) {
             <span class='prelude-val'>Some</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='ident'>x</span>,
             <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>continue</span>,
@@ -509,7 +629,7 @@
             <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> { }
         }
 
-        <span class='ident'>wind_aloft</span>.<span class='ident'>push</span>(<span class='ident'>WindsAloft</span>::<span class='ident'>new</span>(<span class='ident'>station</span>, <span class='ident'>winds</span>));
+        <span class='ident'>wind_aloft</span>.<span class='ident'>push</span>(<span class='ident'>StationForecast</span>::<span class='ident'>new</span>(<span class='ident'>station</span>, <span class='ident'>winds</span>));
     }
 
     <span class='ident'>wind_aloft</span>
@@ -533,44 +653,6 @@
         <span class='prelude-val'>Some</span>(<span class='ident'>Wind</span>::<span class='ident'>new</span>(<span class='ident'>direction</span>, <span class='ident'>speed</span>, <span class='ident'>altitude</span>))
     } <span class='kw'>else</span> {
         <span class='prelude-val'>None</span>
-    }
-}
-
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>test</span> {
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_basic_wind</span>() {
-        <span class='kw'>let</span> <span class='ident'>wind</span> <span class='op'>=</span> ::<span class='ident'>parse_wind</span>(<span class='string'>&quot;3127&quot;</span>, <span class='number'>3000u32</span>).<span class='ident'>unwrap</span>();
-
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>wind</span>.<span class='ident'>speed</span>, <span class='number'>27u32</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>wind</span>.<span class='ident'>direction</span>, <span class='number'>310u32</span>);
-    }
-
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_bad_wind</span>() {
-        <span class='kw'>let</span> <span class='ident'>wind</span> <span class='op'>=</span> ::<span class='ident'>parse_wind</span>(<span class='string'>&quot;invalid&quot;</span>, <span class='number'>3000u32</span>);
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>wind</span> {
-            <span class='prelude-val'>Some</span>(_) <span class='op'>=&gt;</span> <span class='boolval'>true</span>,
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='boolval'>false</span>,
-        };
-
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>parsed</span>, <span class='boolval'>false</span>);
-    }
-
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_wind_with_negative_temp</span>() {
-        <span class='kw'>let</span> <span class='ident'>wind</span> <span class='op'>=</span> ::<span class='ident'>parse_wind</span>(<span class='string'>&quot;3127-32&quot;</span>, <span class='number'>3000u32</span>).<span class='ident'>unwrap</span>();
-
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>wind</span>.<span class='ident'>speed</span>, <span class='number'>27u32</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>wind</span>.<span class='ident'>direction</span>, <span class='number'>310u32</span>);
-    }
-
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_wind_with_positive_temp</span>() {
-        <span class='kw'>let</span> <span class='ident'>wind</span> <span class='op'>=</span> ::<span class='ident'>parse_wind</span>(<span class='string'>&quot;3127+32&quot;</span>, <span class='number'>3000u32</span>).<span class='ident'>unwrap</span>();
-
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>wind</span>.<span class='ident'>speed</span>, <span class='number'>27u32</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>wind</span>.<span class='ident'>direction</span>, <span class='number'>310u32</span>);
     }
 }
 </pre>
