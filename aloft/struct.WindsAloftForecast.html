@@ -47,9 +47,13 @@
             </a>
         </span><a id='src-14137' class='srclink' href='../src/aloft/lib.rs.html#57-67' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct WindsAloftForecast {
+    pub forecasts: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='../aloft/struct.StationForecast.html' title='aloft::StationForecast'>StationForecast</a>&gt;,
     // some fields omitted
 }</pre><div class='docblock'><p>All information associated with winds aloft forecast</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../aloft/struct.WindsAloftForecast.html' title='aloft::WindsAloftForecast'>WindsAloftForecast</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../aloft/struct.WindsAloftForecast.html' title='aloft::WindsAloftForecast'>WindsAloftForecast</a></code></h4>
+</div><h2 class='fields'>Fields</h2>
+<table><tr class='stab '>
+                                  <td id='structfield.forecasts'><code>forecasts</code></td><td><div class='docblock'><p>The list of <code>StationForecast</code> objects that are held in this report.</p>
+</div></td></tr></table><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../aloft/struct.WindsAloftForecast.html' title='aloft::WindsAloftForecast'>WindsAloftForecast</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../aloft/struct.WindsAloftForecast.html' title='aloft::WindsAloftForecast'>WindsAloftForecast</a></code></h4>
 <h4 id='method.refresh' class='method'><code>fn <a href='#method.refresh' class='fnname'>refresh</a>(&amp;mut self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
 <div class='docblock'><p>Re-downloads the forecast from NOAA. Returns None if there is a problem with the download,
 or <code>Some(())</code> if the operation completes successfully.</p>
