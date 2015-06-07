@@ -63,7 +63,7 @@ pub struct WindsAloftForecast {
     forecast_time: u32,
 
     /// The list of `StationForecast` objects that are held in this report.
-    forecasts: Vec<StationForecast>,
+    pub forecasts: Vec<StationForecast>,
 }
 
 
