@@ -1,6 +1,6 @@
 [package]
 name = "aloft"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Nate Mara <natemara@gmail.com>"]
 readme = "README.md"
 license = "MIT"
