@@ -122,3 +122,9 @@ fn test_parse_1432_time_from_body() {
 
     assert_eq!(::WindsAloftForecast::parse_time_from_body(body), 1432u32);
 }
+
+#[test]
+fn test_immediate_need_refresh() {
+    let forecast = ::WindsAloftForecast::new();
+    assert!(!forecast.needs_refresh());
+}
